@@ -1,35 +1,19 @@
 package com.song.attence.domain;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import com.song.attence.base.BaseDomain;
+import com.song.attence.base.Desc;
+import lombok.Data;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import java.util.Date;
 
 /**
  * 考勤数字实体
  */
-@Getter
-@Setter
-@Entity
-public class AttenceNum {
+@Data
+@Entity(name = "song_attence_num")
+public class AttenceNum extends BaseDomain {
 
-    @Id
-    @Column(name = "id")
-    @GeneratedValue
-    private Long id;
-
-    @Column(updatable = false)
-    @CreationTimestamp
-    private Date createTime = new Date();
-
-    /**
-     * 考勤数字
-     */
+    @Desc("考勤数字")
     private Integer num;
 
 }

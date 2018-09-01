@@ -20,7 +20,7 @@ public class AttenceNumService {
     /**
      * 生成随机考勤数据
      */
-    @Scheduled
+    @Scheduled(cron = "0 0 0 1/1 * ?")
     public void randomAttenceNum() {
         Random random = new Random();
         Integer num = random.nextInt(8999) + 1000;

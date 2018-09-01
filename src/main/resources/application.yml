@@ -1,0 +1,18 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: attence
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  datasource:
+    name: datasource
+    initialize: false
+    url: jdbc:mysql://118.24.62.58:3306/attence
+    username: root
+    password: jiansong
+    driverClassName: com.mysql.jdbc.Driver
