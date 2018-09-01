@@ -1,6 +1,7 @@
 package com.song.attence.util;
 
 import com.song.attence.base.Desc;
+import com.song.attence.domain.AttenceNum;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
@@ -28,23 +29,23 @@ public class CodeUtil {
     public static final String RES_PACKAGE = "com.song.attence.controller.res";
 
     //类保存地址（相对项目根目录）
-    public static final String BASE_PATH = "src/";
+    public static final String BASE_PATH = "src/main/java/";
 
     public static void main(String[] args) {
-        String beanName = "Notice";
-        String beanDesc = "通知单";
+        String beanName = "AttenceNum";
+        String beanDesc = "考勤";
 
         //实体bean
-//        Class<Notice> beanClazz = Notice.class;
+        Class<AttenceNum> beanClazz = AttenceNum.class;
 
         CodeUtil.createRepositoryClass(beanName, beanDesc);
         CodeUtil.createServiceClass(beanName, beanDesc);
         CodeUtil.createControllerClass(beanName, beanDesc);
-//        CodeUtil.createAddReqClass(beanClazz, beanName, beanDesc);
-//        CodeUtil.createEditReqClass(beanClazz, beanName, beanDesc);
-//        CodeUtil.createDetailResClass(beanClazz, beanName, beanDesc);
-//        CodeUtil.createPageReqClass(beanName, beanDesc);
-//        CodeUtil.createPageResClass(beanClazz, beanName, beanDesc);
+        CodeUtil.createAddReqClass(beanClazz, beanName, beanDesc);
+        CodeUtil.createEditReqClass(beanClazz, beanName, beanDesc);
+        CodeUtil.createDetailResClass(beanClazz, beanName, beanDesc);
+        CodeUtil.createPageReqClass(beanName, beanDesc);
+        CodeUtil.createPageResClass(beanClazz, beanName, beanDesc);
     }
 
     /**
@@ -86,9 +87,9 @@ public class CodeUtil {
         buffer.append(ENTER);
 
         //引入依赖包
-        buffer.append("import com.jiuling.controller.response.base.PageRes;").append(ENTER);
-        buffer.append("import com.jiuling.constant.Errors;").append(ENTER);
-        buffer.append("import com.jiuling.exception.BusinessException;").append(ENTER);
+        buffer.append("import com.song.attence.base.PageRes;").append(ENTER);
+        buffer.append("import com.song.attence.base.Errors;").append(ENTER);
+        buffer.append("import com.song.attence.base.BusinessException;").append(ENTER);
         buffer.append("import " + REQ_PACKAGE + "." + className + "AddReq;").append(ENTER);
         buffer.append("import " + REQ_PACKAGE + "." + className + "PageReq;").append(ENTER);
         buffer.append("import " + RES_PACKAGE + "." + className + "PageRes;").append(ENTER);
@@ -126,7 +127,7 @@ public class CodeUtil {
 
         //编辑
         buffer.append(TAB).append("public void edit" + className + "(" + className + "EditReq req) {").append(ENTER);
-        buffer.append(TAB).append(TAB).append(className + " " + StringUtils.uncapitalize(className) + " = " + StringUtils.uncapitalize(className) + "Repository.findOne(req.getId());").append(ENTER);
+        buffer.append(TAB).append(TAB).append(className + " " + StringUtils.uncapitalize(className) + " = getAndCheck(req.getId());").append(ENTER);
         buffer.append(TAB).append(TAB).append("BeanUtils.copyProperties(req, " + StringUtils.uncapitalize(className) + ");").append(ENTER);
         buffer.append(TAB).append(TAB).append(StringUtils.uncapitalize(className) + "Repository.save(" + StringUtils.uncapitalize(className) + ");").append(ENTER);
         buffer.append(TAB).append("}").append(ENTER);
@@ -135,7 +136,7 @@ public class CodeUtil {
         //删除
         buffer.append(TAB).append("public void delete" + className + "(Long id) {").append(ENTER);
         buffer.append(TAB).append(TAB).append("getAndCheck(id);").append(ENTER);
-        buffer.append(TAB).append(TAB).append(StringUtils.uncapitalize(className) + "Repository.delete(id);").append(ENTER);
+        buffer.append(TAB).append(TAB).append(StringUtils.uncapitalize(className) + "Repository.deleteById(id);").append(ENTER);
         buffer.append(TAB).append("}").append(ENTER);
         buffer.append(ENTER);
 
@@ -150,7 +151,7 @@ public class CodeUtil {
 
         //分页
         buffer.append(TAB).append("public PageRes<" + className + "PageRes> page" + className + "(" + className + "PageReq req) {").append(ENTER);
-        buffer.append(TAB).append(TAB).append("PageRequest pageRequest = new PageRequest(req.getPage(), req.getSize());").append(ENTER);
+        buffer.append(TAB).append(TAB).append("PageRequest pageRequest = PageRequest.of(req.getPage(), req.getSize());").append(ENTER);
         buffer.append(TAB).append(TAB).append("Page<" + className + "> page = " + StringUtils.uncapitalize(className) + "Repository.findAll(pageRequest);").append(ENTER);
         buffer.append(TAB).append(TAB).append("PageRes<" + className + "PageRes> response = new PageRes(page);").append(ENTER);
         buffer.append(TAB).append(TAB).append("page.getContent().forEach(" + StringUtils.uncapitalize(className) + " -> {").append(ENTER);
@@ -164,7 +165,7 @@ public class CodeUtil {
 
         //验证数据是否存在
         buffer.append(TAB).append("public " + className + " getAndCheck(Long id) {").append(ENTER);
-        buffer.append(TAB).append(TAB).append(className).append(" " + StringUtils.uncapitalize(className) + " = ").append(StringUtils.uncapitalize(className) + "Repository.findOne(id);").append(ENTER);
+        buffer.append(TAB).append(TAB).append(className).append(" " + StringUtils.uncapitalize(className) + " = ").append(StringUtils.uncapitalize(className) + "Repository.getOne(id);").append(ENTER);
         buffer.append(TAB).append(TAB).append("if (null == " + StringUtils.uncapitalize(className)).append(") {").append(ENTER);
         buffer.append(TAB).append(TAB).append(TAB).append("throw new BusinessException(Errors.DATA_NOT_EXISTED);").append(ENTER);
         buffer.append(TAB).append(TAB).append("}").append(ENTER);
@@ -188,8 +189,8 @@ public class CodeUtil {
         buffer.append(ENTER);
 
         //引入依赖包
-        buffer.append("import com.jiuling.controller.response.base.ResponseEntity;").append(ENTER);
-        buffer.append("import com.jiuling.controller.response.base.PageRes;").append(ENTER);
+        buffer.append("import com.song.attence.base.ResBean;").append(ENTER);
+        buffer.append("import com.song.attence.base.PageRes;").append(ENTER);
         buffer.append("import " + DOMAIN_PACKAGE + "." + className + ";").append(ENTER);
         buffer.append("import " + SERVICE_PACKAGE + "." + className + "Service;").append(ENTER);
         buffer.append("import " + REQ_PACKAGE + "." + className + "AddReq;").append(ENTER);
@@ -221,42 +222,42 @@ public class CodeUtil {
         //生成新增方法
         buffer.append(TAB).append("@ApiOperation(\"" + describe + "-新增\")").append(ENTER);
         buffer.append(TAB).append("@PostMapping(\"" + "add" + className + "\")").append(ENTER);
-        buffer.append(TAB).append("public ResponseEntity<Long> add" + className + "(@Valid @RequestBody ").append(className + "AddReq req) {").append(ENTER);
-        buffer.append(TAB).append(TAB).append("return new ResponseEntity(" + StringUtils.uncapitalize(className) + "Service.add" + className + "(req));").append(ENTER);
+        buffer.append(TAB).append("public ResBean<Long> add" + className + "(@Valid @RequestBody ").append(className + "AddReq req) {").append(ENTER);
+        buffer.append(TAB).append(TAB).append("return new ResBean(" + StringUtils.uncapitalize(className) + "Service.add" + className + "(req));").append(ENTER);
         buffer.append(TAB).append("}").append(ENTER);
         buffer.append(ENTER);
 
         //生成编辑方法
         buffer.append(TAB).append("@ApiOperation(\"" + describe + "-编辑\")").append(ENTER);
         buffer.append(TAB).append("@PostMapping(\"" + "edit" + className + "\")").append(ENTER);
-        buffer.append(TAB).append("public ResponseEntity edit" + className + "(@Valid @RequestBody ").append(className + "EditReq req) {").append(ENTER);
+        buffer.append(TAB).append("public ResBean edit" + className + "(@Valid @RequestBody ").append(className + "EditReq req) {").append(ENTER);
         buffer.append(TAB).append(TAB).append(StringUtils.uncapitalize(className) + "Service.edit" + className + "(req);").append(ENTER);
-        buffer.append(TAB).append(TAB).append("return new ResponseEntity();").append(ENTER);
+        buffer.append(TAB).append(TAB).append("return new ResBean();").append(ENTER);
         buffer.append(TAB).append("}").append(ENTER);
         buffer.append(ENTER);
 
         //生成删除方法
         buffer.append(TAB).append("@ApiOperation(\"" + describe + "-删除\")").append(ENTER);
         buffer.append(TAB).append("@GetMapping(\"" + "delete" + className + "/{id}\")").append(ENTER);
-        buffer.append(TAB).append("public ResponseEntity delete" + className + "(@PathVariable(\"id\") Long id) {").append(ENTER);
+        buffer.append(TAB).append("public ResBean delete" + className + "(@PathVariable(\"id\") Long id) {").append(ENTER);
         buffer.append(TAB).append(TAB).append(StringUtils.uncapitalize(className) + "Service.delete" + className + "(id);").append(ENTER);
-        buffer.append(TAB).append(TAB).append("return new ResponseEntity();").append(ENTER);
+        buffer.append(TAB).append(TAB).append("return new ResBean();").append(ENTER);
         buffer.append(TAB).append("}").append(ENTER);
         buffer.append(ENTER);
 
         //生成详情方法
         buffer.append(TAB).append("@ApiOperation(\"" + describe + "-详情\")").append(ENTER);
         buffer.append(TAB).append("@GetMapping(\"" + "detail" + className + "/{id}\")").append(ENTER);
-        buffer.append(TAB).append("public ResponseEntity<" + className + "DetailRes> detail" + className + "(@PathVariable(\"id\") Long id) {").append(ENTER);
-        buffer.append(TAB).append(TAB).append("return new ResponseEntity(").append(StringUtils.uncapitalize(className) + "Service.detail" + className + "(id));").append(ENTER);
+        buffer.append(TAB).append("public ResBean<" + className + "DetailRes> detail" + className + "(@PathVariable(\"id\") Long id) {").append(ENTER);
+        buffer.append(TAB).append(TAB).append("return new ResBean(").append(StringUtils.uncapitalize(className) + "Service.detail" + className + "(id));").append(ENTER);
         buffer.append(TAB).append("}").append(ENTER);
         buffer.append(ENTER);
 
         //生成分页方法
         buffer.append(TAB).append("@ApiOperation(\"" + describe + "-分页\")").append(ENTER);
         buffer.append(TAB).append("@PostMapping(\"" + "page" + className + "\")").append(ENTER);
-        buffer.append(TAB).append("public ResponseEntity<PageRes<" + className + "PageRes>> page" + className + "(@Valid @RequestBody ").append(className + "PageReq req) {").append(ENTER);
-        buffer.append(TAB).append(TAB).append("return new ResponseEntity(" + StringUtils.uncapitalize(className) + "Service.page" + className + "(req));").append(ENTER);
+        buffer.append(TAB).append("public ResBean<PageRes<" + className + "PageRes>> page" + className + "(@Valid @RequestBody ").append(className + "PageReq req) {").append(ENTER);
+        buffer.append(TAB).append(TAB).append("return new ResBean(" + StringUtils.uncapitalize(className) + "Service.page" + className + "(req));").append(ENTER);
         buffer.append(TAB).append("}").append(ENTER);
         buffer.append(ENTER);
 
@@ -385,7 +386,7 @@ public class CodeUtil {
         //引入依赖包
         buffer.append("import io.swagger.annotations.ApiModel;").append(ENTER);
         buffer.append("import io.swagger.annotations.ApiModelProperty;").append(ENTER);
-        buffer.append("import com.controller.req.base.PageReq;").append(ENTER);
+        buffer.append("import com.song.attence.base.PageReq;").append(ENTER);
         buffer.append("import lombok.Data;").append(ENTER);
         buffer.append(ENTER);
 

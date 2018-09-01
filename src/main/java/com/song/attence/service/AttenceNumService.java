@@ -1,30 +1,77 @@
 package com.song.attence.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
+import com.song.attence.base.BusinessException;
+import com.song.attence.base.Errors;
+import com.song.attence.base.PageRes;
+import com.song.attence.controller.req.AttenceNumAddReq;
+import com.song.attence.controller.req.AttenceNumEditReq;
+import com.song.attence.controller.req.AttenceNumPageReq;
+import com.song.attence.controller.res.AttenceNumDetailRes;
+import com.song.attence.controller.res.AttenceNumPageRes;
+import com.song.attence.domain.AttenceNum;
+import com.song.attence.repository.AttenceNumRepository;
+import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Random;
+import javax.annotation.Resource;
+import java.util.Optional;
 
 /**
- * 考勤数字服务
+ * @Author jiansong0720@gmail.com
+ * @Describe 考勤
+ * @Date 2018-09-01
  */
-@Slf4j
 @Service
 public class AttenceNumService {
 
-    // TODO: 2018/8/31/031 每天早上执行
+    @Resource
+    private AttenceNumRepository attenceNumRepository;
 
-    /**
-     * 生成随机考勤数据
-     */
-    @Scheduled(cron = "0 0 0 1/1 * ?")
-    public void randomAttenceNum() {
-        Random random = new Random();
-        Integer num = random.nextInt(8999) + 1000;
-        log.info("{}考勤数字:{}.", DateFormat.getDateInstance().format(new Date()), num);
+    public Long addAttenceNum(AttenceNumAddReq req) {
+        AttenceNum attenceNum = new AttenceNum();
+        BeanUtils.copyProperties(req, attenceNum);
+        attenceNum = attenceNumRepository.save(attenceNum);
+        return attenceNum.getId();
+    }
+
+    public void editAttenceNum(AttenceNumEditReq req) {
+        AttenceNum attenceNum = getAndCheck(req.getId());
+        BeanUtils.copyProperties(req, attenceNum);
+        attenceNumRepository.save(attenceNum);
+    }
+
+    public void deleteAttenceNum(Long id) {
+        getAndCheck(id);
+        attenceNumRepository.deleteById(id);
+    }
+
+    public AttenceNumDetailRes detailAttenceNum(Long id) {
+        AttenceNum attenceNum = getAndCheck(id);
+        AttenceNumDetailRes attenceNumDetailRes = new AttenceNumDetailRes();
+        BeanUtils.copyProperties(attenceNum, attenceNumDetailRes);
+        return attenceNumDetailRes;
+    }
+
+    public PageRes<AttenceNumPageRes> pageAttenceNum(AttenceNumPageReq req) {
+        PageRequest pageRequest = PageRequest.of(req.getPage(), req.getSize());
+        Page<AttenceNum> page = attenceNumRepository.findAll(pageRequest);
+        PageRes<AttenceNumPageRes> response = new PageRes(page);
+        page.getContent().forEach(attenceNum -> {
+            AttenceNumPageRes attenceNumPageRes = new AttenceNumPageRes();
+            BeanUtils.copyProperties(attenceNum, attenceNumPageRes);
+            response.getList().add(attenceNumPageRes);
+        });
+        return response;
+    }
+
+    public AttenceNum getAndCheck(Long id) {
+        Optional<AttenceNum> attenceNum = attenceNumRepository.findById(id);
+        if (!attenceNum.isPresent()) {
+            throw new BusinessException(Errors.DATA_NOT_EXISTED);
+        }
+        return attenceNum.get();
     }
 
 }
